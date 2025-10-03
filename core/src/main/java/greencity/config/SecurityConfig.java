@@ -92,10 +92,16 @@ public class SecurityConfig {
                         new AccessTokenAuthenticationFilter(jwtTool, authenticationManager(), userService),
                         UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint((req, resp, exc) -> resp.sendError(
-                                SC_UNAUTHORIZED, "Authorize first."))
-                        .accessDeniedHandler((req, resp, exc) -> resp.sendError(
-                                SC_FORBIDDEN, "You don't have authorities.")))
+                        .authenticationEntryPoint((req, resp, e) -> {
+                            resp.setStatus(SC_UNAUTHORIZED);
+                            resp.setContentType("application/json");
+                            resp.getWriter().write("{\"status\":401,\"message\":\"Authorize first.\"}");
+                        })
+                        .accessDeniedHandler((req, resp, e) -> {
+                            resp.setStatus(SC_FORBIDDEN);
+                            resp.setContentType("application/json");
+                            resp.getWriter().write("{\"status\":403,\"message\":\"You don't have authorities.\"}");
+                        }))
                 .authorizeHttpRequests(req -> req
                         .requestMatchers("/static/css/**", "/static/img/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -165,10 +171,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT,
                                 "/ownSecurity/changePassword",
                                 "/user/profile",
-                                "/user/{id}/updateUserLastActivityTime/{date}",
                                 "/user/language/{languageId}",
                                 "/user/employee-email")
                         .hasAnyRole(USER, ADMIN, UBS_EMPLOYEE, MODERATOR, EMPLOYEE)
+                        .requestMatchers(HttpMethod.PUT, "/user/updateUserLastActivityTime/**")
+                        .hasAnyRole(ADMIN)
                         .requestMatchers(HttpMethod.PUT,
                                 "/user/edit-authorities",
                                 "/user/authorities",
