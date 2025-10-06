@@ -31,10 +31,15 @@ import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.social.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -588,7 +593,10 @@ public class UserServiceImpl implements UserService {
      * @author Marian Datsko
      */
     @Override
-    public UserProfileStatisticsDto getUserProfileStatistics(Long userId) {
+    public UserProfileStatisticsDto getUserProfileStatistics(Long userId, Long currentUserId) {
+        if (!userId.equals(currentUserId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied.");
+        }
         Long amountOfPublishedNewsByUserId = restClient.findAmountOfPublishedNews(userId);
         Long amountOfAcquiredHabitsByUserId = restClient.findAmountOfAcquiredHabits(userId);
         Long amountOfHabitsInProgressByUserId = restClient.findAmountOfHabitsInProgress(userId);
