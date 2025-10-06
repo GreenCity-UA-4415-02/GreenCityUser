@@ -1,5 +1,6 @@
 package greencity.config;
 
+import greencity.converters.UserIdArgumentResolver;
 import greencity.converters.UserArgumentResolver;
 import greencity.service.UserService;
 import org.modelmapper.ModelMapper;
@@ -95,5 +96,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(new UserArgumentResolver(userService, modelMapper));
+        resolvers.add(new UserIdArgumentResolver(userService, modelMapper));
     }
 }
