@@ -131,12 +131,15 @@ public class SecurityConfig {
                                 "/user/checkByUuid",
                                 "/user/get-user-rating")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                USER_LINK)
+                        .hasAnyRole(ADMIN)
                         .requestMatchers(HttpMethod.POST,
                                 "/ownSecurity/signUp",
                                 "/ownSecurity/signIn",
                                 "/ownSecurity/updatePassword")
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, USER_LINK,
+                        .requestMatchers(HttpMethod.GET,
                                 "/user/shopping-list-items/habits/{habitId}/shopping-list",
                                 "/user/{userId}/{habitId}/custom-shopping-list-items/available",
                                 "/user/{userId}/profile/", "/user/isOnline/{userId}/",
