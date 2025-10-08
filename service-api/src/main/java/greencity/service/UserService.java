@@ -292,7 +292,7 @@ public interface UserService {
      * @param userId - {@link UserVO}'s id
      * @author Marian Datsko
      */
-    UserProfileStatisticsDto getUserProfileStatistics(Long userId);
+    UserProfileStatisticsDto getUserProfileStatistics(Long userId, Long currentUserId);
 
     /**
      * Method deactivates all the {@link UserVO} by list of IDs.
