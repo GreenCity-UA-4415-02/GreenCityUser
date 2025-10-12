@@ -319,7 +319,7 @@ class UserControllerTest {
         mockMvc.perform(get(userLink + "/{userId}/profileStatistics/", 1)
             .headers(headers))
             .andExpect(status().isOk());
-        verify(userService).getUserProfileStatistics((1L));
+        verify(userService).getUserProfileStatistics(1L, null);
     }
 
     @Test
