@@ -442,11 +442,11 @@ class UserServiceImplTest {
             .thenReturn(TestConst.SIMPLE_LONG_NUMBER);
         when(restClient.findAmountOfHabitsInProgress(TestConst.SIMPLE_LONG_NUMBER))
             .thenReturn(TestConst.SIMPLE_LONG_NUMBER);
-        userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER);
+        userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER, TestConst.SIMPLE_LONG_NUMBER);
         assertEquals(ModelUtils.USER_PROFILE_STATISTICS_DTO,
-            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER));
+            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER, TestConst.SIMPLE_LONG_NUMBER));
         assertNotEquals(ModelUtils.USER_PROFILE_STATISTICS_DTO,
-            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER_BAD_VALUE));
+            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER_BAD_VALUE, TestConst.SIMPLE_LONG_NUMBER_BAD_VALUE));
     }
 
     @Test
