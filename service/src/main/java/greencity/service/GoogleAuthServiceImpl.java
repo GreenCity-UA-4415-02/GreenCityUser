@@ -24,7 +24,7 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     @Value("${spring.security.oauth2.client.registration.google.scope}")
     private String scope;
 
-    @Value("${spring.security.oauth2.client.registration.google.authorization-grant-type}")
+    @Value("${spring.security.oauth2.client.registration.google.response-type}")
     private String responseType;
 
     @Value("${spring.security.oauth2.client.provider.google.authorization-uri}")
