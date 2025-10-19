@@ -79,6 +79,12 @@ jobs:
 
   docker-build:
     runs-on: ubuntu-latest
+
+    permissions:
+      checks: write
+      contents: write
+
+
     needs: build
     steps:
       - uses: actions/checkout@v5
@@ -122,6 +128,11 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+
+    permissions:
+      checks: write
+      contents: write
+
     needs: docker-build
     steps:
       - uses: actions/checkout@v5
