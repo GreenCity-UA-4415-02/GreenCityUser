@@ -8,7 +8,6 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import java.net.URI;
 import java.security.SecureRandom;
 import java.util.*;
@@ -35,7 +34,7 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
 
     public GoogleAuthServiceImpl(
-            AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository) {
+        AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository) {
         this.authorizationRequestRepository = authorizationRequestRepository;
     }
 
@@ -54,15 +53,15 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
         additionalParameters.put("access_type", "offline");
 
         return OAuth2AuthorizationRequest.authorizationCode()
-                .clientId(clientId)
-                .redirectUri(redirectUri)
-                .scopes(Set.of(scope.split(",")))
-                .authorizationUri(authorizationUri)
-                .additionalParameters(additionalParameters)
-                .attributes(Collections.singletonMap(
-                        OAuth2ParameterNames.REGISTRATION_ID, "google"))
-                .state(state)
-                .build();
+            .clientId(clientId)
+            .redirectUri(redirectUri)
+            .scopes(Set.of(scope.split(",")))
+            .authorizationUri(authorizationUri)
+            .additionalParameters(additionalParameters)
+            .attributes(Collections.singletonMap(
+                OAuth2ParameterNames.REGISTRATION_ID, "google"))
+            .state(state)
+            .build();
     }
 
     @Override
@@ -76,13 +75,13 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
         String formattedScope = getFormattedScope(scope);
 
         return UriComponentsBuilder.fromUriString(authorizationUri)
-                .queryParam(OAuth2ParameterNames.CLIENT_ID, clientId)
-                .queryParam(OAuth2ParameterNames.REDIRECT_URI, redirectUri)
-                .queryParam(OAuth2ParameterNames.SCOPE, formattedScope)
-                .queryParam(OAuth2ParameterNames.RESPONSE_TYPE, responseType)
-                .queryParam(OAuth2ParameterNames.STATE, state)
-                .encode()
-                .build()
-                .toUri();
+            .queryParam(OAuth2ParameterNames.CLIENT_ID, clientId)
+            .queryParam(OAuth2ParameterNames.REDIRECT_URI, redirectUri)
+            .queryParam(OAuth2ParameterNames.SCOPE, formattedScope)
+            .queryParam(OAuth2ParameterNames.RESPONSE_TYPE, responseType)
+            .queryParam(OAuth2ParameterNames.STATE, state)
+            .encode()
+            .build()
+            .toUri();
     }
 }
