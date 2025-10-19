@@ -167,8 +167,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserVO findByEmail(String email) {
         return userRepo.findByEmail(email)
-                .map(u -> modelMapper.map(u, UserVO.class))
-                .orElseThrow(() -> new WrongEmailException(ErrorMessage.USER_NOT_FOUND_BY_EMAIL + email));
+            .map(u -> modelMapper.map(u, UserVO.class))
+            .orElseThrow(() -> new WrongEmailException(ErrorMessage.USER_NOT_FOUND_BY_EMAIL + email));
     }
 
     /**

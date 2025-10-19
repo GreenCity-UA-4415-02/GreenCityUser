@@ -71,9 +71,9 @@ class GoogleAuthServiceImplTest {
         assertNotNull(state);
 
         ArgumentCaptor<OAuth2AuthorizationRequest> authRequestCaptor =
-                ArgumentCaptor.forClass(OAuth2AuthorizationRequest.class);
+            ArgumentCaptor.forClass(OAuth2AuthorizationRequest.class);
         verify(authorizationRequestRepository).saveAuthorizationRequest(
-                authRequestCaptor.capture(), eq(request), eq(response));
+            authRequestCaptor.capture(), eq(request), eq(response));
 
         OAuth2AuthorizationRequest savedRequest = authRequestCaptor.getValue();
         assertEquals(state, savedRequest.getState());
