@@ -62,15 +62,13 @@ jobs:
         # -Dsonar.binaries=target/classes \
         # -Dsonar.dynamicAnalysis=reuseReports
         # Checks-out your greencity.repository under $GITHUB_WORKSPACE, so your job can access it
-      
-      - name: Test Reporter
-        uses: dorny/test-reporter@v2.1.1
-        if: success() || failure()
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
         with:
-          name: Tests Report
+          name: test-reports
           path: ${{ env.userRepoName }}/target/surefire-reports/*.xml
-          reporter: java-junit
-      
+
       - name: Rename user jar to app
         run: mv $userRepoName/target/*.jar $userRepoName/target/$onbootJarName
 
@@ -123,3 +121,19 @@ jobs:
           branch: 'gh-pages'
           folder: '.'
           clean: true
+
+  tests-report:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download test reports
+        uses: actions/download-artifact@v4
+        with:
+          name: test-reports
+      - name: Test Reporter
+        uses: dorny/test-reporter@v2.1.1
+        if: success() || failure()
+        with:
+          name: Tests Report
+          path: '*.xml'    # файли, що завантажились в робочий каталог
+          reporter: java-junit
