@@ -159,6 +159,7 @@ class UserServiceImplTest {
     @Test
     void saveTest() {
         when(userRepo.findByEmail(userEmail)).thenReturn(Optional.ofNullable(user));
+        when(modelMapper.map(user, UserVO.class)).thenReturn(userVO);
         when(userService.findByEmail(userEmail)).thenReturn(userVO);
         when(modelMapper.map(userVO, User.class)).thenReturn(user);
         when(userRepo.save(user)).thenReturn(user);
@@ -442,11 +443,11 @@ class UserServiceImplTest {
             .thenReturn(TestConst.SIMPLE_LONG_NUMBER);
         when(restClient.findAmountOfHabitsInProgress(TestConst.SIMPLE_LONG_NUMBER))
             .thenReturn(TestConst.SIMPLE_LONG_NUMBER);
-        userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER, TestConst.SIMPLE_LONG_NUMBER);
+        userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER);
         assertEquals(ModelUtils.USER_PROFILE_STATISTICS_DTO,
-            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER, TestConst.SIMPLE_LONG_NUMBER));
+            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER));
         assertNotEquals(ModelUtils.USER_PROFILE_STATISTICS_DTO,
-            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER_BAD_VALUE, TestConst.SIMPLE_LONG_NUMBER_BAD_VALUE));
+            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER_BAD_VALUE));
     }
 
     @Test
