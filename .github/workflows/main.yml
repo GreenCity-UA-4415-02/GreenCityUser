@@ -63,17 +63,25 @@ jobs:
         # -Dsonar.dynamicAnalysis=reuseReports
         # Checks-out your greencity.repository under $GITHUB_WORKSPACE, so your job can access it
 
-      - name: Upload test reports
-        uses: actions/upload-artifact@v4
+      - name: Test Reporter
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
         with:
-          name: test-reports
+          name: Tests Report
           path: ${{ env.userRepoName }}/target/surefire-reports/*.xml
+          reporter: java-junit
 
       - name: Rename user jar to app
         run: mv $userRepoName/target/*.jar $userRepoName/target/$onbootJarName
 
       - name: Set outputs
         run: echo "GITHUB_SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v5
 
       - name: Docker Login
         uses: docker/login-action@v3
@@ -95,23 +103,28 @@ jobs:
           tags: ${{ env.dockerRepoName }}:test-${{ env.GITHUB_SHA_SHORT }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
-#       - name: Kubernetes Set Context
-#         uses: Azure/k8s-set-context@v3.0
-#         with:
-#           kubeconfig: ${{ secrets.KUBE_CONFIG }}
-      
-#       - name: Set up Postgres
-#         run: kubectl scale deploy postgres --replicas=1 -n test
-      
-#       - name: Kubernetes tests
-#         run: |
-#           cd chart-test
-#           go test -v ./...
-      
-#       - name: Post Set up Postgres
-#         if: success() || failure()
-#         run: kubectl scale deploy postgres --replicas=0 -n test
+          #       - name: Kubernetes Set Context
+          #         uses: Azure/k8s-set-context@v3.0
+          #         with:
+          #           kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+          #       - name: Set up Postgres
+          #         run: kubectl scale deploy postgres --replicas=1 -n test
+
+          #       - name: Kubernetes tests
+          #         run: |
+          #           cd chart-test
+          #           go test -v ./...
+
+          #       - name: Post Set up Postgres
+          #         if: success() || failure()
+          #         run: kubectl scale deploy postgres --replicas=0 -n test
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: docker-build
+    steps:
+      - uses: actions/checkout@v5
 
       - name: Deploy 🚀
         if: ${{ github.event_name == 'push' }}
@@ -121,19 +134,3 @@ jobs:
           branch: 'gh-pages'
           folder: '.'
           clean: true
-
-  tests-report:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Download test reports
-        uses: actions/download-artifact@v4
-        with:
-          name: test-reports
-      - name: Test Reporter
-        uses: dorny/test-reporter@v2.1.1
-        if: success() || failure()
-        with:
-          name: Tests Report
-          path: '*.xml'    # файли, що завантажились в робочий каталог
-          reporter: java-junit
