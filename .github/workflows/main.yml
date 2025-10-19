@@ -31,6 +31,9 @@ jobs:
       checks: write
       contents: write
 
+    outputs:
+      GITHUB_SHA_SHORT: ${{ steps.set-outputs.outputs.GITHUB_SHA_SHORT }}
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v5
@@ -75,6 +78,7 @@ jobs:
         run: mv $userRepoName/target/*.jar $userRepoName/target/$onbootJarName
 
       - name: Set outputs
+        id: set-outputs
         run: echo "GITHUB_SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
   docker-build:

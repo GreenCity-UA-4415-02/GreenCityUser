@@ -403,6 +403,9 @@ public class UserController {
     public ResponseEntity<UserProfileStatisticsDto> getUserProfileStatistics(
         @Parameter(description = "Id of current user. Cannot be empty.") @PathVariable Long userId,
         @ApiIgnore @CurrentUserId Long currentUserId) {
+        if (currentUserId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required.");
+        }
         if (!userId.equals(currentUserId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied.");
         }

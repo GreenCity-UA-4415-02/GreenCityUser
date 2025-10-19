@@ -77,8 +77,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.cors(corsCustomizer -> corsCustomizer.configurationSource(request -> {
             CorsConfiguration config = new CorsConfiguration();
-            config.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
-            config.setAllowedOrigins(Collections.singletonList("http://localhost:4205"));
+            config.setAllowedOrigins(
+                Arrays.asList("http://localhost:4200", "http://localhost:4205"));
             config.setAllowedMethods(
                 Arrays.asList("GET", "POST", "OPTIONS", "DELETE", "PUT", "PATCH"));
             config.setAllowedHeaders(
