@@ -16,7 +16,7 @@ env:
   repository: user
   userRepoName: core
   onbootJarName: app.jar
-  dockerRepoName: skyere/greencityuser
+  dockerRepoName: bucketblueberry/greencity-user
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -25,19 +25,27 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     runs-on: ubuntu-latest
+
+    # Add permissions to allow the GITHUB_TOKEN to write Check Runs
+    permissions:
+      checks: write
+      contents: write
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v5
         with:
+          distribution: temurin
           java-version: 21
-      
-#       - name: Set up Go
-#         uses: actions/setup-go@v3
-#         with:
-#           go-version: 1.18
+          cache: maven
+
+      #       - name: Set up Go
+      #         uses: actions/setup-go@v3
+      #         with:
+      #           go-version: 1.18
 
       - name: Run a multi-line script
         env:
@@ -45,59 +53,94 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_USER }}
         run: |
           git fetch --unshallow
-          mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar -Dsonar.projectKey=ita-social-projects-green-city-user -Dsonar.organization=ita-social-projects -Dsonar.host.url=https://sonarcloud.io -Dsonar.sources='src/main/java/greencity' -Dsonar.binaries=target/classes -Dsonar.dynamicAnalysis=reuseReports
+          mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install
+        # mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar \
+        # -Dsonar.projectKey=ita-social-projects-green-city-user \
+        # -Dsonar.organization=ita-social-projects \
+        # -Dsonar.host.url=https://sonarcloud.io \
+        # -Dsonar.sources='src/main/java/greencity' \
+        # -Dsonar.binaries=target/classes \
+        # -Dsonar.dynamicAnalysis=reuseReports
         # Checks-out your greencity.repository under $GITHUB_WORKSPACE, so your job can access it
-      
+
       - name: Test Reporter
-        uses: dorny/test-reporter@v1.5.0
+        uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
           name: Tests Report
           path: ${{ env.userRepoName }}/target/surefire-reports/*.xml
           reporter: java-junit
-      
+
       - name: Rename user jar to app
         run: mv $userRepoName/target/*.jar $userRepoName/target/$onbootJarName
 
       - name: Set outputs
         run: echo "GITHUB_SHA_SHORT=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
+  docker-build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      checks: write
+      contents: write
+
+    needs: build
+    steps:
+      - uses: actions/checkout@v5
+
       - name: Docker Login
-        uses: docker/login-action@v2.0.0
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+
       - name: Build and push Docker images
-        uses: docker/build-push-action@v3.0.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
           push: true
           tags: ${{ env.dockerRepoName }}:test-${{ env.GITHUB_SHA_SHORT }}
-      
-#       - name: Kubernetes Set Context
-#         uses: Azure/k8s-set-context@v3.0
-#         with:
-#           kubeconfig: ${{ secrets.KUBE_CONFIG }}
-      
-#       - name: Set up Postgres
-#         run: kubectl scale deploy postgres --replicas=1 -n test
-      
-#       - name: Kubernetes tests
-#         run: |
-#           cd chart-test
-#           go test -v ./...
-      
-#       - name: Post Set up Postgres
-#         if: success() || failure()
-#         run: kubectl scale deploy postgres --replicas=0 -n test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          #       - name: Kubernetes Set Context
+          #         uses: Azure/k8s-set-context@v3.0
+          #         with:
+          #           kubeconfig: ${{ secrets.KUBE_CONFIG }}
+
+          #       - name: Set up Postgres
+          #         run: kubectl scale deploy postgres --replicas=1 -n test
+
+          #       - name: Kubernetes tests
+          #         run: |
+          #           cd chart-test
+          #           go test -v ./...
+
+          #       - name: Post Set up Postgres
+          #         if: success() || failure()
+          #         run: kubectl scale deploy postgres --replicas=0 -n test
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      checks: write
+      contents: write
+
+    needs: docker-build
+    steps:
+      - uses: actions/checkout@v5
 
       - name: Deploy 🚀
         if: ${{ github.event_name == 'push' }}
-        uses: JamesIves/github-pages-deploy-action@3.7.1
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: .
-          CLEAN: true 
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: 'gh-pages'
+          folder: '.'
+          clean: true
