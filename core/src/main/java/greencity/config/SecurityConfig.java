@@ -125,6 +125,7 @@ public class SecurityConfig {
                                 "/ownSecurity/restorePassword",
                                 "/googleSecurity",
                                 "/auth/google",
+                                "/auth/google/callback",
                                 "/facebookSecurity/generateFacebookAuthorizeURL",
                                 "/facebookSecurity/facebook",
                                 "/user/activatedUsersAmount",
@@ -269,4 +270,9 @@ public class SecurityConfig {
     public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
         return new HttpSessionOAuth2AuthorizationRequestRepository();
     }
+
+//    @Bean
+//    public RestTemplate restTemplate() {
+//        return new RestTemplate();
+//    }
 }
