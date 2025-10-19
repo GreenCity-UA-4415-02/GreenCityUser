@@ -28,9 +28,9 @@ public class GoogleSecurityController {
 
     @Operation(summary = "Redirect to Google consent with CSRF state")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "302", description = "Redirect to Google OAuth URL", headers = {
-                    @Header(name = "Location", description = "Google Authorization URL")
-            }),
+        @ApiResponse(responseCode = "302", description = "Redirect to Google OAuth URL", headers = {
+            @Header(name = "Location", description = "Google Authorization URL")
+        }),
     })
     @GetMapping("/auth/google")
     @ApiLocale
@@ -38,8 +38,8 @@ public class GoogleSecurityController {
         URI redirectUrl = googleAuthService.generateGoogleAuthRedirectUrl(request, response);
 
         return ResponseEntity
-                .status(HttpStatus.FOUND)
-                .location(redirectUrl)
-                .build();
+            .status(HttpStatus.FOUND)
+            .location(redirectUrl)
+            .build();
     }
 }

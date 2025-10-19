@@ -29,7 +29,7 @@ public class UserIdArgumentResolver implements HandlerMethodArgumentResolver {
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.getParameterAnnotation(CurrentUserId.class) != null
-                && parameter.getParameterType().equals(Long.class);
+            && parameter.getParameterType().equals(Long.class);
     }
 
     /**
@@ -39,7 +39,7 @@ public class UserIdArgumentResolver implements HandlerMethodArgumentResolver {
      */
     @Override
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
+        NativeWebRequest webRequest, WebDataBinderFactory binderFactory) {
         Principal principal = webRequest.getUserPrincipal();
         return principal != null ? userService.findByEmail(principal.getName()).getId() : null;
     }

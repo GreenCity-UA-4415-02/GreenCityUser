@@ -160,13 +160,12 @@ public class UserController {
      */
     @Operation(summary = "Get all available email notifications statuses")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
-                    content = @Content(
-                            array = @ArraySchema(schema = @Schema(implementation = EmailNotification.class)),
-                            examples = @ExampleObject(value = "[\"DISABLED\",\"IMMEDIATELY\",\"DAILY\",\"WEEKLY\",\"MONTHLY\"]")
-                    )),
-            @ApiResponse(responseCode = "303", description = HttpStatuses.SEE_OTHER),
-            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST)
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+            content = @Content(
+                array = @ArraySchema(schema = @Schema(implementation = EmailNotification.class)),
+                examples = @ExampleObject(value = "[\"DISABLED\",\"IMMEDIATELY\",\"DAILY\",\"WEEKLY\",\"MONTHLY\"]"))),
+        @ApiResponse(responseCode = "303", description = HttpStatuses.SEE_OTHER),
+        @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST)
     })
     @GetMapping("emailNotifications")
     public ResponseEntity<List<EmailNotification>> getEmailNotifications() {
@@ -397,7 +396,7 @@ public class UserController {
         @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
         @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
-            @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN)
+        @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN)
     })
     @GetMapping("/{userId}/profileStatistics/")
     public ResponseEntity<UserProfileStatisticsDto> getUserProfileStatistics(
@@ -415,15 +414,14 @@ public class UserController {
      */
     @Operation(summary = "Find current user by principal")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
-            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
-            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
-            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+        @ApiResponse(responseCode = "200", description = HttpStatuses.OK),
+        @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+        @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+        @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
     })
     @GetMapping("/findByEmail")
     public ResponseEntity<UserVO> findByEmail(
-            @Parameter(description = "Valid email", schema = @Schema(format = "email"))
-            @RequestParam @Email String email) {
+        @Parameter(description = "Valid email", schema = @Schema(format = "email")) @RequestParam @Email String email) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findByEmail(email));
     }
 
@@ -498,8 +496,6 @@ public class UserController {
         @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
         @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
-
-
 
     })
     @PutMapping("/{id}")
@@ -598,7 +594,7 @@ public class UserController {
         @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
         @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
         @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN),
-            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+        @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
     })
     @PutMapping("/deactivate")
     public ResponseEntity<ResponseEntity.BodyBuilder> deactivateUser(@RequestParam Long id,

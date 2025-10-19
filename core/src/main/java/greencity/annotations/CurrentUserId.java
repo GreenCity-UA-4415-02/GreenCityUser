@@ -8,8 +8,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation is used for injecting {@link Long} into
- * controller by {@link UserIdArgumentResolver}.
+ * Annotation is used for injecting {@link Long} into controller by
+ * {@link UserIdArgumentResolver}.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
