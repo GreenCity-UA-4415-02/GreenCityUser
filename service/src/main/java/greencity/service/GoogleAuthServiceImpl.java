@@ -3,25 +3,18 @@ package greencity.service;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import greencity.constant.ErrorMessage;
-import greencity.dto.user.GoogleSuccessSignInDto;
-import greencity.dto.user.UserVO;
-import greencity.enums.UserStatus;
-import greencity.exception.exceptions.BadUserStatusException;
-import greencity.repository.UserRepo;
-import greencity.security.dto.SuccessSignUpDto;
-import greencity.security.dto.ownsecurity.OwnSignUpDto;
-import greencity.security.jwt.JwtTool;
-import greencity.security.service.OwnSecurityService;
+import greencity.dto.user.GoogleUserDto;
+import greencity.exception.exceptions.*;
+import greencity.security.dto.SuccessSignInDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
@@ -30,9 +23,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
-
 import java.io.IOException;
 import java.net.URI;
 import java.security.GeneralSecurityException;
@@ -68,29 +59,22 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     private String tokenUri;
 
     private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
-    private final UserRepo userRepo;
-    private final ModelMapper modelMapper;
-    private final OwnSecurityService ownSecurityService;
-    private final JwtTool jwtTool;
+    private final GoogleProvisioningService provisioningService;
     private final SecureRandom secureRandom = new SecureRandom();
     private final GoogleIdTokenVerifier googleIdTokenVerifier;
     private final RestTemplate restTemplate;
 
     @Autowired
     public GoogleAuthServiceImpl(
-            AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository,
-            UserService userService, UserRepo userRepo, ModelMapper modelMapper, OwnSecurityService ownSecurityService, JwtTool jwtTool,
-            GoogleIdTokenVerifier googleIdTokenVerifier) {
+        AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository,
+        ModelMapper modelMapper,
+        GoogleProvisioningService provisioningService,
+        GoogleIdTokenVerifier googleIdTokenVerifier,
+        RestTemplate restTemplate) {
         this.authorizationRequestRepository = authorizationRequestRepository;
-        this.userRepo = userRepo;
-        this.modelMapper = modelMapper;
-        this.ownSecurityService = ownSecurityService;
-        this.jwtTool = jwtTool;
+        this.provisioningService = provisioningService;
         this.googleIdTokenVerifier = googleIdTokenVerifier;
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(5000);
-        factory.setReadTimeout(5000);
-        this.restTemplate = new RestTemplate(factory);
+        this.restTemplate = restTemplate;
     }
 
     private String getFormattedScope(String scope) {
@@ -104,19 +88,15 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
     }
 
     private OAuth2AuthorizationRequest buildAuthorizationRequest(String state) {
-        Map<String, Object> additionalParameters = new HashMap<>();
-        additionalParameters.put("access_type", "offline");
-
         return OAuth2AuthorizationRequest.authorizationCode()
-                .clientId(clientId)
-                .redirectUri(redirectUri)
-                .scopes(Arrays.stream(scope.split(",")).map(String::trim).collect(Collectors.toSet()))
-                .authorizationUri(authorizationUri)
-                .additionalParameters(additionalParameters)
-                .attributes(Collections.singletonMap(
-                        OAuth2ParameterNames.REGISTRATION_ID, "google"))
-                .state(state)
-                .build();
+            .clientId(clientId)
+            .redirectUri(redirectUri)
+            .scopes(Arrays.stream(scope.split(",")).map(String::trim).collect(Collectors.toSet()))
+            .authorizationUri(authorizationUri)
+            .attributes(Collections.singletonMap(
+                OAuth2ParameterNames.REGISTRATION_ID, "google"))
+            .state(state)
+            .build();
     }
 
     @Override
@@ -130,37 +110,36 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
         String formattedScope = getFormattedScope(scope);
 
         return UriComponentsBuilder.fromUriString(authorizationUri)
-                .queryParam(OAuth2ParameterNames.CLIENT_ID, clientId)
-                .queryParam(OAuth2ParameterNames.REDIRECT_URI, redirectUri)
-                .queryParam(OAuth2ParameterNames.SCOPE, formattedScope)
-                .queryParam(OAuth2ParameterNames.RESPONSE_TYPE, responseType)
-                .queryParam(OAuth2ParameterNames.STATE, state)
-                .encode()
-                .build()
-                .toUri();
+            .queryParam(OAuth2ParameterNames.CLIENT_ID, clientId)
+            .queryParam(OAuth2ParameterNames.REDIRECT_URI, redirectUri)
+            .queryParam(OAuth2ParameterNames.SCOPE, formattedScope)
+            .queryParam(OAuth2ParameterNames.RESPONSE_TYPE, responseType)
+            .queryParam(OAuth2ParameterNames.STATE, state)
+            .encode()
+            .build()
+            .toUri();
     }
 
     @Override
-    public GoogleSuccessSignInDto handleGoogleAuthCallback(
-            String code,
-            String state,
-            String error,
-            HttpServletRequest request,
-            HttpServletResponse response) {
+    public SuccessSignInDto handleGoogleAuthCallback(
+        String code,
+        String state,
+        String error,
+        HttpServletRequest request,
+        HttpServletResponse response) {
         if (error != null) {
             log.error("Google authentication error: {}", error);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Google authentication failed: " + error);
+            throw new GoogleAuthErrorNotNullException("Google authentication failed: " + error);
         }
-
         if (code == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Missing authorization code.");
+            throw new GoogleAuthMissingCodeException("Missing authorization code.");
         }
         OAuth2AuthorizationRequest savedRequest = authorizationRequestRepository
-                .removeAuthorizationRequest(request, response);
+            .removeAuthorizationRequest(request, response);
 
         if (savedRequest == null || !savedRequest.getState().equals(state)) {
             log.error("State mismatch detected");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "State parameter mismatch.");
+            throw new StateMismatchException("State parameter mismatch.");
         }
 
         HttpHeaders headers = new HttpHeaders();
@@ -178,23 +157,23 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
         TokenResponse tokenResponse;
         try {
             ResponseEntity<TokenResponse> responseEntity = restTemplate.postForEntity(
-                    tokenUri,
-                    requestEntity,
-                    TokenResponse.class);
+                tokenUri,
+                requestEntity,
+                TokenResponse.class);
             if (!responseEntity.getStatusCode().is2xxSuccessful() || responseEntity.getBody() == null) {
                 log.error("Google token exchange failed with status: {}",
-                        responseEntity.getStatusCode());
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to exchange code for tokens.");
+                    responseEntity.getStatusCode());
+                throw new GoogleTokenExchangeException("Failed to exchange code for tokens.");
             }
             tokenResponse = responseEntity.getBody();
         } catch (RestClientException e) {
             log.error("HTTP error during Google token exchange", e);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid or expired code.");
+            throw new GoogleTokenExchangeException("Invalid or expired code.");
         }
 
         String idTokenString = tokenResponse.getIdToken();
         if (idTokenString == null || idTokenString.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token response missing id_token.");
+            throw new GoogleTokenValidationException("Token response missing id_token.");
         }
 
         GoogleIdToken idToken;
@@ -202,53 +181,32 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
             idToken = googleIdTokenVerifier.verify(idTokenString);
         } catch (GeneralSecurityException | IOException e) {
             log.error("Google ID Token verification failed", e);
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID Token validation failed.");
+            throw new GoogleTokenValidationException("ID Token validation failed.");
         }
         if (idToken == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid ID Token received.");
+            throw new GoogleTokenValidationException("Invalid ID Token received.");
         }
 
         GoogleIdToken.Payload payload = idToken.getPayload();
 
         Boolean emailVerified = (Boolean) payload.get("email_verified");
         if (emailVerified == null || !emailVerified) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unverified email.");
+            throw new GoogleEmailNotVerifiedException("Unverified email.");
         }
 
-        Optional<UserVO> user = userRepo.findByEmail(payload.getEmail())
-                .map(u -> modelMapper.map(u, UserVO.class));
-        Long userId;
+        GoogleUserDto googleUserDto = GoogleUserDto.builder()
+            .googleProviderId(payload.getSubject())
+            .email(payload.getEmail())
+            .emailVerified(emailVerified)
+            .name((String) payload.get("name"))
+            .picture((String) payload.get("picture"))
+            .build();
 
-        if (!user.isEmpty()) {
-            userId = user.get().getId();
-        } else {
-            ownSecurityService.signUp(OwnSignUpDto.builder()
-                    .name((String) payload.get("name"))
-                    .email(payload.getEmail())
-                    .isUbs(false)
-                    .password(UUID.randomUUID().toString())
-                    .build(), "ua");
-            user = userRepo.findByEmail(payload.getEmail())
-                    .map(u -> modelMapper.map(u, UserVO.class));
-            userId = user.get().getId();
-        }
-
-        String accessToken = jwtTool.createAccessToken(user.get().getEmail(), user.get().getRole());
-        String refreshToken = jwtTool.createRefreshToken(user.get());
-
-        return GoogleSuccessSignInDto.builder()
-                .userId(userId)
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .name((String) payload.get("name"))
-                .googleUserId(payload.getSubject())
-                .email(payload.getEmail())
-                .emailVerified(emailVerified)
-                .picture((String) payload.get("picture"))
-                .build();
+        return provisioningService.provisionUser(googleUserDto);
     }
 
     @Getter
+    @Setter
     public static class TokenResponse {
         @JsonProperty("id_token")
         private String idToken;

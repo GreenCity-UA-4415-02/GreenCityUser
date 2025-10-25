@@ -6,13 +6,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GoogleSuccessSignInDto {
-    private Long userId;
-    private String accessToken;
-    private String refreshToken;
-    private String name;
-    private String googleUserId;
+public class GoogleUserDto {
+    private String googleProviderId;
     private String email;
     private Boolean emailVerified;
+    private String name;
     private String picture;
 }
