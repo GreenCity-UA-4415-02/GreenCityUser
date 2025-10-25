@@ -395,7 +395,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
         log.error(exception.getMessage());
         ExceptionResponse exceptionResponse = new ExceptionResponse(getErrorAttributes(request));
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("exceptionResponse");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exceptionResponse);
     }
 
     @ExceptionHandler(GoogleTokenExchangeException.class)

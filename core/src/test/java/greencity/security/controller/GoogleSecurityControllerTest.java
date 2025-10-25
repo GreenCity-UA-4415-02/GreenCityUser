@@ -1,8 +1,7 @@
-package greencity.controller;
+package greencity.security.controller;
 
 import greencity.exception.exceptions.*;
 import greencity.exception.handler.CustomExceptionHandler;
-import greencity.security.controller.GoogleSecurityController;
 import greencity.security.dto.SuccessSignInDto;
 import greencity.service.GoogleAuthService;
 import jakarta.servlet.http.HttpServletRequest;
