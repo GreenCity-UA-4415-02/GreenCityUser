@@ -32,7 +32,9 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"provider", "provider_id"})
+})
 @EqualsAndHashCode(
     exclude = {"verifyEmail", "ownSecurity",
         "refreshTokenKey", "restorePasswordEmail"})
@@ -103,6 +105,15 @@ public class User {
 
     @Column(columnDefinition = "varchar(60)")
     private String uuid;
+
+    @Column(name = "provider")
+    private String provider;
+
+    @Column(name = "provider_id")
+    private String providerId;
+
+    @Column(name = "email_verified")
+    private Boolean emailVerified;
 
     @ManyToOne
     private Language language;
