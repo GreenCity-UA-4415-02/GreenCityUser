@@ -125,6 +125,7 @@ public class SecurityConfig {
                     "/ownSecurity/restorePassword",
                     "/googleSecurity",
                     "/auth/google",
+                    "/auth/google/callback",
                     "/facebookSecurity/generateFacebookAuthorizeURL",
                     "/facebookSecurity/facebook",
                     "/user/activatedUsersAmount",
