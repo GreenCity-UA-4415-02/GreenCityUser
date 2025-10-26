@@ -139,4 +139,16 @@ public interface EmailService {
      * @author Pavlo Hural.
      */
     void sendSuccessRestorePasswordByEmail(String email, String language, String userName, boolean isUbs);
+
+    /**
+     * Sends a notification to the event organizer about event status changes.
+     *
+     * @param recipientName  Name of the event organizer.
+     * @param recipientEmail Email of the event organizer.
+     * @param eventTitle     The title of the event.
+     * @param eventType      The type of action (CREATED, EDITED, DELETED).
+     * @param language       User's language for localization.
+     */
+    void sendEventNotification(String recipientName, String recipientEmail, String eventTitle, String eventType, String language);
 }
+

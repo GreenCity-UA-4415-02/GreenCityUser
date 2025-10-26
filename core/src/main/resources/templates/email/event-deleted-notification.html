@@ -1,0 +1,11 @@
+<tr>
+    <td bgcolor="#ffffff" align="left" style="padding: 24px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px;">
+        <div>
+            <h3 th:text="#{event.greeting} + ' ' + ${userName} + '!'"></h3>
+            <p>
+                <span th:utext="#{event.deleted.body(${eventTitle})}"></span>
+            </p>
+            <p th:text="#{event.thanks}"></p>
+        </div>
+    </td>
+</tr>
