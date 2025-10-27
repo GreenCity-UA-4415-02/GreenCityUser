@@ -65,7 +65,7 @@ jobs:
           -Dsonar.dynamicAnalysis=reuseReports \
           -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco-aggregate/jacoco.xml \
           -Dsonar.qualitygate.wait=true \
-          -Dsonar.ws.timeout=120"
+          -Dsonar.ws.timeout=120
         # Checks-out your greencity.repository under $GITHUB_WORKSPACE, so your job can access it
 
       - name: Test Reporter
