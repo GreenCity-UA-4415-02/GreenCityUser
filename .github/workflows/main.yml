@@ -57,8 +57,8 @@ jobs:
         run: |
           git fetch --unshallow
           mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar \
-          -Dsonar.projectKey=greencity-ua-4415-02 \
-          -Dsonar.organization=GreenCity-UA-4415-02 \
+          -Dsonar.projectKey=GreenCity-UA-4415-02_GreenCityMVP \
+          -Dsonar.organization=greencity-ua-4415-02 \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.sources='src/main/java/greencity' \
           -Dsonar.binaries=target/classes \
