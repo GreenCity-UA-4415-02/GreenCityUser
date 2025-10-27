@@ -20,6 +20,7 @@ import greencity.filters.UserSpecification;
 import greencity.repository.LanguageRepo;
 import greencity.repository.UserDeactivationRepo;
 import greencity.repository.UserRepo;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.provider.Arguments;
@@ -36,14 +37,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
-
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import static greencity.ModelUtils.*;
 import static greencity.enums.Role.ROLE_USER;
 import static greencity.enums.UserStatus.ACTIVATED;
@@ -443,12 +442,11 @@ class UserServiceImplTest {
             .thenReturn(TestConst.SIMPLE_LONG_NUMBER);
         when(restClient.findAmountOfHabitsInProgress(TestConst.SIMPLE_LONG_NUMBER))
             .thenReturn(TestConst.SIMPLE_LONG_NUMBER);
-        userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER, TestConst.SIMPLE_LONG_NUMBER);
+        userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER);
         assertEquals(ModelUtils.USER_PROFILE_STATISTICS_DTO,
-            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER, TestConst.SIMPLE_LONG_NUMBER));
+            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER));
         assertNotEquals(ModelUtils.USER_PROFILE_STATISTICS_DTO,
-            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER_BAD_VALUE,
-                TestConst.SIMPLE_LONG_NUMBER_BAD_VALUE));
+            userService.getUserProfileStatistics(TestConst.SIMPLE_LONG_NUMBER_BAD_VALUE));
     }
 
     @Test
