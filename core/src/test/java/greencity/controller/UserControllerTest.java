@@ -8,6 +8,7 @@ import static greencity.constant.AppConstant.AUTHORIZATION;
 
 import greencity.constant.AppConstant;
 import greencity.converters.UserArgumentResolver;
+import greencity.converters.UserIdArgumentResolver;
 import greencity.dto.PageableAdvancedDto;
 import greencity.dto.filter.FilterUserDto;
 import greencity.dto.language.LanguageVO;
@@ -83,7 +84,8 @@ class UserControllerTest {
         this.mockMvc = MockMvcBuilders
             .standaloneSetup(userController)
             .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver(),
-                new UserArgumentResolver(userService, new ModelMapper()))
+                new UserArgumentResolver(userService, new ModelMapper()),
+                new UserIdArgumentResolver(userService, new ModelMapper()))
             .build();
         objectMapper = new ObjectMapper();
     }
@@ -313,13 +315,19 @@ class UserControllerTest {
 
     @Test
     void getUserProfileStatistics() throws Exception {
-        String accessToken = "accessToken";
+        String accessToken = "accessToken, userEmail with id = 1";
+        Principal principal = mock(Principal.class);
+        when(principal.getName()).thenReturn(TestConst.EMAIL);
+        when(userService.findByEmail(TestConst.EMAIL)).thenReturn(ModelUtils.getUserVO());
+
         HttpHeaders headers = new HttpHeaders();
         headers.set(AUTHORIZATION, accessToken);
+
         mockMvc.perform(get(userLink + "/{userId}/profileStatistics/", 1)
+            .principal(principal)
             .headers(headers))
             .andExpect(status().isOk());
-        verify(userService).getUserProfileStatistics((1L));
+        verify(userService).getUserProfileStatistics(1L);
     }
 
     @Test
