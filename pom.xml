@@ -35,6 +35,8 @@
         <checkstyle-maven-plugin.version>3.3.1</checkstyle-maven-plugin.version>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+        <sonar.organization>greencity-ua-4415-02</sonar.organization>
+        <sonar.projectKey>GreenCity-UA-4415-02_GreenCityUser</sonar.projectKey>
         <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
         <sonar.language>java</sonar.language>
     </properties>
