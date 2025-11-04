@@ -39,6 +39,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          lfs: true
 
       - name: Set up JDK 21
         uses: actions/setup-java@v5
@@ -52,19 +53,21 @@ jobs:
       #         with:
       #           go-version: 1.18
 
-      - name: Run a multi-line script
+      - name: Maven Build and Sonar Analysis
+        if: ${{ github.event_name == 'pull_request' || github.event_name == 'push' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_USER }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PR_KEY: ${{ github.event.pull_request.number }}
+          PR_BRANCH: ${{ github.head_ref }}
+          PR_BASE: ${{ github.base_ref }}
         run: | 
-          mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar \
+          mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install \
+          org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.projectKey=GreenCity-UA-4415-02_GreenCityUser \
           -Dsonar.organization=greencity-ua-4415-02 \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.sources='src/main/java/greencity' \
-          -Dsonar.binaries=target/classes \
-          -Dsonar.dynamicAnalysis=reuseReports \
-          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco-aggregate/jacoco.xml \
+          -Dsonar.token=${SONAR_TOKEN} \
+          -Dsonar.coverage.jacoco.xmlReportPaths=jacoco-report/target/site/jacoco-aggregate/jacoco.xml \
           -Dsonar.qualitygate.wait=true \
           -Dsonar.ws.timeout=120
         # Checks-out your greencity.repository under $GITHUB_WORKSPACE, so your job can access it
