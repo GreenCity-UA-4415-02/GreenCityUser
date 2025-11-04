@@ -71,7 +71,7 @@ jobs:
           -Dsonar.token=${SONAR_TOKEN} \
           -Dsonar.coverage.jacoco.xmlReportPaths=jacoco-report/target/site/jacoco-aggregate/jacoco.xml \
           -Dsonar.qualitygate.wait=false \
-          -Dsonar.ws.timeout=120
+          -Dsonar.ws.timeout=120"
           
           if [ "${{ github.event_name }}" = "pull_request" ]; then
                       echo "--- Adding Pull Request parameters for Sonar Analysis ---"
