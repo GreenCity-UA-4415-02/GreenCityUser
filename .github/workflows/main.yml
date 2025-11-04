@@ -66,7 +66,6 @@ jobs:
           org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.projectKey=GreenCity-UA-4415-02_GreenCityUser \
           -Dsonar.organization=greencity-ua-4415-02 \
-          -Dsonar.token=${SONAR_TOKEN} \
           -Dsonar.coverage.jacoco.xmlReportPaths=jacoco-report/target/site/jacoco-aggregate/jacoco.xml \
           -Dsonar.qualitygate.wait=true \
           -Dsonar.ws.timeout=120
