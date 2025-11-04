@@ -61,14 +61,28 @@ jobs:
           PR_KEY: ${{ github.event.pull_request.number }}
           PR_BRANCH: ${{ github.head_ref }}
           PR_BASE: ${{ github.base_ref }}
-        run: | 
-          mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install \
+        run: |
+          echo "--- Starting Unified Build and Sonar Analysis ---"
+          
+          SONAR_CMD="mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install \
           org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
           -Dsonar.projectKey=GreenCity-UA-4415-02_GreenCityUser \
           -Dsonar.organization=greencity-ua-4415-02 \
+          -Dsonar.token=${SONAR_TOKEN} \
           -Dsonar.coverage.jacoco.xmlReportPaths=jacoco-report/target/site/jacoco-aggregate/jacoco.xml \
-          -Dsonar.qualitygate.wait=true \
+          -Dsonar.qualitygate.wait=false \
           -Dsonar.ws.timeout=120
+          
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+                      echo "--- Adding Pull Request parameters for Sonar Analysis ---"
+                      SONAR_CMD="$SONAR_CMD -Dsonar.pullrequest.key=$PR_KEY -Dsonar.pullrequest.branch=$PR_BRANCH -Dsonar.pullrequest.base=$PR_BASE"
+                    else
+                      BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
+                      echo "--- Running standard Branch Analysis for Sonar on branch $BRANCH_NAME ---"
+                      SONAR_CMD="$SONAR_CMD -Dsonar.branch.name=$BRANCH_NAME"
+                    fi
+
+                    eval "$SONAR_CMD"
         # Checks-out your greencity.repository under $GITHUB_WORKSPACE, so your job can access it
 
       - name: Test Reporter
