@@ -149,6 +149,6 @@ public interface EmailService {
      * @param eventType      The type of action (CREATED, EDITED, DELETED).
      * @param language       User's language for localization.
      */
-    void sendEventNotification(String recipientName, String recipientEmail, String eventTitle, String eventType, String language);
+    void sendEventNotification(String recipientName, String recipientEmail, String eventTitle, String eventType,
+        String language);
 }
-

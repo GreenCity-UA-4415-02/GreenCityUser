@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
+import org.springframework.context.MessageSource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.thymeleaf.ITemplateEngine;
 
@@ -42,13 +43,15 @@ class EmailServiceImplTest {
     private ITemplateEngine templateEngine;
     @Mock
     private UserRepo userRepo;
+    @Mock
+    private MessageSource messageSource;
 
     @BeforeEach
     public void setup() {
         initMocks(this);
         service = new EmailServiceImpl(javaMailSender, templateEngine, userRepo, Executors.newCachedThreadPool(),
             "http://localhost:4200", "http://localhost:4200", "http://localhost:8080",
-            "test@email.com");
+            "test@email.com", messageSource);
         placeAuthorDto = PlaceAuthorDto.builder()
             .id(1L)
             .email("testEmail@gmail.com")

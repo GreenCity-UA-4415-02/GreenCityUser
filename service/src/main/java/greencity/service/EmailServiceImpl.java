@@ -35,7 +35,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import org.springframework.context.MessageSource;
-import java.text.MessageFormat;
 
 /**
  * {@inheritDoc}
@@ -59,14 +58,14 @@ public class EmailServiceImpl implements EmailService {
      */
     @Autowired
     public EmailServiceImpl(JavaMailSender javaMailSender,
-                            ITemplateEngine templateEngine,
-                            UserRepo userRepo,
-                            @Qualifier("sendEmailExecutor") Executor executor,
-                            @Value("${client.address}") String clientLink,
-                            @Value("${econews.address}") String ecoNewsLink,
-                            @Value("${address}") String serverLink,
-                            @Value("${sender.email.address}") String senderEmailAddress,
-                            MessageSource messageSource) {
+        ITemplateEngine templateEngine,
+        UserRepo userRepo,
+        @Qualifier("sendEmailExecutor") Executor executor,
+        @Value("${client.address}") String clientLink,
+        @Value("${econews.address}") String ecoNewsLink,
+        @Value("${address}") String serverLink,
+        @Value("${sender.email.address}") String senderEmailAddress,
+        MessageSource messageSource) {
         this.javaMailSender = javaMailSender;
         this.templateEngine = templateEngine;
         this.userRepo = userRepo;
@@ -312,7 +311,8 @@ public class EmailServiceImpl implements EmailService {
      * {@inheritDoc}
      */
     @Override
-    public void sendEventNotification(String recipientName, String recipientEmail, String eventTitle, String eventType, String language) {
+    public void sendEventNotification(String recipientName, String recipientEmail, String eventTitle, String eventType,
+        String language) {
         log.info("Sending event notification of type {} for event '{}' to {}", eventType, eventTitle, recipientEmail);
 
         String subjectKey;
@@ -344,7 +344,7 @@ public class EmailServiceImpl implements EmailService {
         model.put("userName", recipientName);
         model.put("eventTitle", eventTitle);
 
-        String subject = messageSource.getMessage(subjectKey, new Object[]{eventTitle}, currentLocale);
+        String subject = messageSource.getMessage(subjectKey, new Object[] {eventTitle}, currentLocale);
         String template = createEmailTemplate(model, templateName);
 
         sendEmail(recipientEmail, subject, template);
