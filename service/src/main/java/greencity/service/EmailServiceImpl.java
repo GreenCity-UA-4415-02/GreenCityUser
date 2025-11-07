@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import org.springframework.context.MessageSource;
 
 /**
  * {@inheritDoc}
@@ -50,6 +51,7 @@ public class EmailServiceImpl implements EmailService {
     private final String serverLink;
     private final String senderEmailAddress;
     private static final String PARAM_USER_ID = "&user_id=";
+    private final MessageSource messageSource;
 
     /**
      * Constructor.
@@ -62,7 +64,8 @@ public class EmailServiceImpl implements EmailService {
         @Value("${client.address}") String clientLink,
         @Value("${econews.address}") String ecoNewsLink,
         @Value("${address}") String serverLink,
-        @Value("${sender.email.address}") String senderEmailAddress) {
+        @Value("${sender.email.address}") String senderEmailAddress,
+        MessageSource messageSource) {
         this.javaMailSender = javaMailSender;
         this.templateEngine = templateEngine;
         this.userRepo = userRepo;
@@ -71,6 +74,7 @@ public class EmailServiceImpl implements EmailService {
         this.ecoNewsLink = ecoNewsLink;
         this.serverLink = serverLink;
         this.senderEmailAddress = senderEmailAddress;
+        this.messageSource = messageSource;
     }
 
     @Override
@@ -301,5 +305,48 @@ public class EmailServiceImpl implements EmailService {
         model.put(EmailConstants.IS_UBS, isUbs);
         String template = createEmailTemplate(model, EmailConstants.SUCCESS_RESTORED_PASSWORD_PAGE);
         sendEmail(email, EmailConstants.RESTORED_PASSWORD, template);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void sendEventNotification(String recipientName, String recipientEmail, String eventTitle, String eventType,
+        String language) {
+        log.info("Sending event notification of type {} for event '{}' to {}", eventType, eventTitle, recipientEmail);
+
+        String subjectKey;
+        String templateName;
+
+        switch (eventType.toUpperCase()) {
+            case "CREATED":
+                subjectKey = "event.created.subject";
+                templateName = "event-created-notification.html";
+                break;
+            case "EDITED":
+                subjectKey = "event.edited.subject";
+                templateName = "event-edited-notification.html";
+                break;
+            case "DELETED":
+                subjectKey = "event.deleted.subject";
+                templateName = "event-deleted-notification.html";
+                break;
+            default:
+                log.error("Unsupported event type: {}", eventType);
+                throw new IllegalArgumentException("Unsupported event type: " + eventType);
+        }
+
+        changeLocale(language);
+        Locale currentLocale = Locale.getDefault();
+
+        Map<String, Object> model = new HashMap<>();
+        model.put(EmailConstants.CLIENT_LINK, clientLink);
+        model.put("userName", recipientName);
+        model.put("eventTitle", eventTitle);
+
+        String subject = messageSource.getMessage(subjectKey, new Object[] {eventTitle}, currentLocale);
+        String template = createEmailTemplate(model, templateName);
+
+        sendEmail(recipientEmail, subject, template);
     }
 }
